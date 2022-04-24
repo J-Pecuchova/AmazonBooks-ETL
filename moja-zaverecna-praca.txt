@@ -10,3 +10,5 @@ Z hlavného cieľa vyplývajú nasledujúce čiastkové ciele/úlohy dizertačn
 -	Navrhnúť a posúdiť prínos navrhnutých techník segmentácie v skúmanej doméne vzdelávania. 
 -	Identifikovať a overiť vhodné formy intervencie využívajúce výsledky predikcie a segmentácie vo vybranom virtuálnom prostredí.
 Požiadavky na študenta: pokročilá znalosť programovania v jazyku Python, štatistických metód a strojového učenia, anglického jazyka.
+
+Rok obhajoby: 2023
