@@ -21,7 +21,11 @@ Zdrojové dáta pochádzajú z Kaggle datasetu dostupného [tu](https://www.kagg
 ### **ERD diagram**
 Surové dáta sú usporiadané v relačnom modeli, ktorý je znázornený na **entitno-relačnom diagrame (ERD)**:
 
-![image](https://github.com/user-attachments/assets/f9a6896b-4d76-4e9a-a34f-0983ec0cb541)
+<p align="center">
+  <img src="https://github.com/JKabathova/AmazonBooks-ETL/blob/master/erd_schema.png" alt="ERD Schema">
+  <br>
+  <em>Obrázok 1 Entitno-relačná schéma AmazonBooks</em>
+</p>
 
 ---
 ## **2 Dimenzionálny model**
@@ -34,7 +38,11 @@ Navrhnutý bol **hviezdicový model (star schema)**, pre efektívnu analýzu kde
 
 Štruktúra hviezdicového modelu je znázornená na diagrame nižšie. Diagram ukazuje prepojenia medzi faktovou tabuľkou a dimenziami, čo zjednodušuje pochopenie a implementáciu modelu.
 
-![image](https://github.com/user-attachments/assets/fd91b20c-6d67-4164-9130-fe347a1eb9cb)
+<p align="center">
+  <img src="https://github.com/JKabathova/AmazonBooks-ETL/blob/master/star_schema.png" alt="Star Schema">
+  <br>
+  <em>Obrázok 2 Schéma hviezdy pre AmazonBooks</em>
+</p>
 
 ---
 ## **3. ETL proces v Snowflake**
@@ -147,7 +155,11 @@ ETL proces v Snowflake umožnil spracovanie pôvodných dát z `.csv` formátu d
 
 Dashboard obsahuje `6 vizualizácií`, ktoré poskytujú základný prehľad o kľúčových metrikách a trendoch týkajúcich sa kníh, používateľov a hodnotení. Tieto vizualizácie odpovedajú na dôležité otázky a umožňujú lepšie pochopiť správanie používateľov a ich preferencie.
 
-![image](https://github.com/user-attachments/assets/b72adbdb-566e-4e25-a524-ce81114d5f35)
+<p align="center">
+  <img src="https://github.com/JKabathova/AmazonBooks-ETL/blob/master/amazonbooks_dashboard.png" alt="ERD Schema">
+  <br>
+  <em>Obrázok 3 Dashboard AmazonBooks datasetu</em>
+</p>
 
 ---
 ### **Graf 1: Najviac hodnotené knihy (Top 10 kníh)**
