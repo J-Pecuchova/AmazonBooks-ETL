@@ -1,19 +1,25 @@
-# **ETL proces datasetu AmazonBooks**
+# **ELT proces datasetu AmazonBooks**
 
-Tento repozitár obsahuje implementáciu ETL procesu v Snowflake pre analýzu dát z **AmazonBooks** datasetu. Projekt sa zameriava na preskúmanie správania používateľov a ich čitateľských preferencií na základe hodnotení kníh a demografických údajov používateľov. Výsledný dátový model umožňuje multidimenzionálnu analýzu a vizualizáciu kľúčových metrik.
+Tento repozitár predstavuje ukážkovú implementáciu ELT procesu v Snowflake a vytvorenie dátového skladu so schémou Star Schema. Projekt pracuje s **AmazonBooks** datasetom. Projekt sa zameriava na preskúmanie správania používateľov a ich čitateľských preferencií na základe hodnotení kníh a demografických údajov používateľov. Výsledný dátový model umožňuje multidimenzionálnu analýzu a vizualizáciu kľúčových metrik.
+
+Cieľom ukážky je demonštrovať, ako má vyzerať dokumentácia, implementácia a vizualizácie pre záverečný projekt.
 
 ---
 ## **1. Úvod a popis zdrojových dát**
-Cieľom semestrálneho projektu je analyzovať dáta týkajúce sa kníh, používateľov a ich hodnotení. Táto analýza umožňuje identifikovať trendy v čitateľských preferenciách, najpopulárnejšie knihy a správanie používateľov.
-
+V tomto príklade analyzujeme dáta o knihách, používateľoch a ich hodnoteniach. Cieľom je porozumieť:
+- čitateľským preferenciám,
+- správaniu používateľov,
+- najpopulárnejším knihám,
+- trendom v hodnoteniach.
+  
 Zdrojové dáta pochádzajú z Kaggle datasetu dostupného [tu](https://www.kaggle.com/datasets/saurabhbagchi/books-dataset). Dataset obsahuje päť hlavných tabuliek:
-- `books`
-- `ratings`
-- `users`
-- `occupations`
-- `education_levels`
+- `books` - metadata o knihách
+- `ratings` - hodnotenia používateľov
+- `users` - demografia používateľov
+- `occupations` - povolania
+- `education_levels` - úrovne vzdelania
 
-Účelom ETL procesu bolo tieto dáta pripraviť, transformovať a sprístupniť pre viacdimenzionálnu analýzu.
+Účelom ELT procesu bolo tieto dáta pripraviť, transformovať a sprístupniť pre viacdimenzionálnu analýzu.
 
 ---
 ### **1.1 Dátová architektúra**
@@ -22,7 +28,7 @@ Zdrojové dáta pochádzajú z Kaggle datasetu dostupného [tu](https://www.kagg
 Surové dáta sú usporiadané v relačnom modeli, ktorý je znázornený na **entitno-relačnom diagrame (ERD)**:
 
 <p align="center">
-  <img src="https://github.com/JKabathova/AmazonBooks-ETL/blob/master/erd_schema.png" alt="ERD Schema">
+  <img src="https://github.com/J-Pecuchova/AmazonBooks-ETL/blob/master/img/erd_schema.png" alt="ERD Schema">
   <br>
   <em>Obrázok 1 Entitno-relačná schéma AmazonBooks</em>
 </p>
@@ -30,7 +36,7 @@ Surové dáta sú usporiadané v relačnom modeli, ktorý je znázornený na **e
 ---
 ## **2 Dimenzionálny model**
 
-Navrhnutý bol **hviezdicový model (star schema)**, pre efektívnu analýzu kde centrálny bod predstavuje faktová tabuľka **`fact_ratings`**, ktorá je prepojená s nasledujúcimi dimenziami:
+V ukážke bola navrhnutá **schéma hviezdy (star schema)** podľa Kimballovej metodológie, ktorá obsahuje 1 tabuľku faktov **`fact_ratings`**, ktorá je prepojená s nasledujúcimi 4 dimenziami:
 - **`dim_books`**: Obsahuje podrobné informácie o knihách (názov, autor, rok vydania, vydavateľ).
 - **`dim_users`**: Obsahuje demografické údaje o používateľoch, ako sú vekové kategórie, pohlavie, povolanie a vzdelanie.
 - **`dim_date`**: Zahrňuje informácie o dátumoch hodnotení (deň, mesiac, rok, štvrťrok).
@@ -39,14 +45,14 @@ Navrhnutý bol **hviezdicový model (star schema)**, pre efektívnu analýzu kde
 Štruktúra hviezdicového modelu je znázornená na diagrame nižšie. Diagram ukazuje prepojenia medzi faktovou tabuľkou a dimenziami, čo zjednodušuje pochopenie a implementáciu modelu.
 
 <p align="center">
-  <img src="https://github.com/JKabathova/AmazonBooks-ETL/blob/master/star_schema.png" alt="Star Schema">
+  <img src="https://github.com/J-Pecuchova/AmazonBooks-ETL/blob/master/img/star_schema.png" alt="Star Schema">
   <br>
   <em>Obrázok 2 Schéma hviezdy pre AmazonBooks</em>
 </p>
 
 ---
-## **3. ETL proces v Snowflake**
-ETL proces pozostával z troch hlavných fáz: `extrahovanie` (Extract), `transformácia` (Transform) a `načítanie` (Load). Tento proces bol implementovaný v Snowflake s cieľom pripraviť zdrojové dáta zo staging vrstvy do viacdimenzionálneho modelu vhodného na analýzu a vizualizáciu.
+## **3. ELT proces v Snowflake**
+ETL proces pozostáva z troch hlavných fáz: `extrahovanie` (Extract), `načítanie` (Load) a `transformácia` (Transform). Tento proces bol implementovaný v Snowflake s cieľom pripraviť zdrojové dáta zo staging vrstvy do viacdimenzionálneho modelu vhodného na analýzu a vizualizáciu.
 
 ---
 ### **3.1 Extract (Extrahovanie dát)**
@@ -56,8 +62,13 @@ Dáta zo zdrojového datasetu (formát `.csv`) boli najprv nahraté do Snowflake
 ```sql
 CREATE OR REPLACE STAGE my_stage;
 ```
+
+---
+### **3.2 Load (Načítanie dát)**
+
 Do stage boli následne nahraté súbory obsahujúce údaje o knihách, používateľoch, hodnoteniach, zamestnaniach a úrovniach vzdelania. Dáta boli importované do staging tabuliek pomocou príkazu `COPY INTO`. Pre každú tabuľku sa použil podobný príkaz:
 
+#### Príklad kódu:
 ```sql
 COPY INTO occupations_staging
 FROM @my_stage/occupations.csv
@@ -67,11 +78,13 @@ FILE_FORMAT = (TYPE = 'CSV' SKIP_HEADER = 1);
 V prípade nekonzistentných záznamov bol použitý parameter `ON_ERROR = 'CONTINUE'`, ktorý zabezpečil pokračovanie procesu bez prerušenia pri chybách.
 
 ---
-### **3.1 Transfor (Transformácia dát)**
+### **3.3 Transfor (Transformácia dát)**
 
 V tejto fáze boli dáta zo staging tabuliek vyčistené, transformované a obohatené. Hlavným cieľom bolo pripraviť dimenzie a faktovú tabuľku, ktoré umožnia jednoduchú a efektívnu analýzu.
 
-Dimenzie boli navrhnuté na poskytovanie kontextu pre faktovú tabuľku. `Dim_users` obsahuje údaje o používateľoch vrátane vekových kategórií, pohlavia, zamestnania a vzdelania. Transformácia zahŕňala rozdelenie veku používateľov do kategórií (napr. „18-24“) a pridanie popisov zamestnaní a vzdelania. Táto dimenzia je typu SCD 2, čo umožňuje sledovať historické zmeny v zamestnaní a vzdelaní používateľov.
+Dimenzie boli navrhnuté na poskytovanie kontextu pre faktovú tabuľku. `Dim_users` obsahuje údaje o používateľoch vrátane vekových kategórií, pohlavia, zamestnania a vzdelania. Transformácia zahŕňala rozdelenie veku používateľov do kategórií (napr. „18-24“) a pridanie popisov zamestnaní a vzdelania. Táto dimenzia je `typu SCD 2`, čo umožňuje sledovať historické zmeny v zamestnaní a vzdelaní používateľov.
+
+#### Príklad kódu:
 ```sql
 CREATE TABLE dim_users AS
 SELECT DISTINCT
@@ -92,10 +105,11 @@ FROM users_staging u
 JOIN occupations_staging o ON u.occupationId = o.occupationId
 JOIN education_levels_staging e ON u.educationId = e.educationId;
 ```
-Dimenzia `dim_date` je navrhnutá tak, aby uchovávala informácie o dátumoch hodnotení kníh. Obsahuje odvodené údaje, ako sú deň, mesiac, rok, deň v týždni (v textovom aj číselnom formáte) a štvrťrok. Táto dimenzia je štruktúrovaná tak, aby umožňovala podrobné časové analýzy, ako sú trendy hodnotení podľa dní, mesiacov alebo rokov. Z hľadiska SCD je táto dimenzia klasifikovaná ako SCD Typ 0. To znamená, že existujúce záznamy v tejto dimenzii sú nemenné a uchovávajú statické informácie.
+Dimenzia `dim_date` je navrhnutá tak, aby uchovávala informácie o dátumoch hodnotení kníh. Obsahuje odvodené údaje, ako sú deň, mesiac, rok, deň v týždni (v textovom aj číselnom formáte) a štvrťrok. Táto dimenzia je štruktúrovaná tak, aby umožňovala podrobné časové analýzy, ako sú trendy hodnotení podľa dní, mesiacov alebo rokov. Z hľadiska SCD je táto dimenzia klasifikovaná ako `SCD Typ 0`. To znamená, že existujúce záznamy v tejto dimenzii sú nemenné a uchovávajú statické informácie.
 
-V prípade, že by bolo potrebné sledovať zmeny súvisiace s odvodenými atribútmi (napr. pracovné dni vs. sviatky), bolo by možné prehodnotiť klasifikáciu na SCD Typ 1 (aktualizácia hodnôt) alebo SCD Typ 2 (uchovávanie histórie zmien). V aktuálnom modeli však táto potreba neexistuje, preto je `dim_date` navrhnutá ako SCD Typ 0 s rozširovaním o nové záznamy podľa potreby.
+V prípade, že by bolo potrebné sledovať zmeny súvisiace s odvodenými atribútmi (napr. pracovné dni vs. sviatky), bolo by možné prehodnotiť klasifikáciu na SCD Typ 1 (aktualizácia hodnôt) alebo SCD Typ 2 (uchovávanie histórie zmien). V aktuálnom modeli však táto potreba neexistuje, preto je `dim_date` navrhnutá ako `SCD Typ 0` s rozširovaním o nové záznamy podľa potreby.
 
+#### Príklad kódu:
 ```sql
 CREATE TABLE dim_date AS
 SELECT
@@ -117,9 +131,11 @@ SELECT
     DATE_PART(quarter, timestamp) AS quarter
 FROM ratings_staging;
 ```
-Podobne `dim_books` obsahuje údaje o knihách, ako sú názov, autor, rok vydania a vydavateľ. Táto dimenzia je typu SCD Typ 0, pretože údaje o knihách sú považované za nemenné, napríklad názov knihy alebo meno autora sa nemenia. 
+Podobne `dim_books` obsahuje údaje o knihách, ako sú názov, autor, rok vydania a vydavateľ. Táto dimenzia je typu `SCD Typ 0`, pretože údaje o knihách sú považované za nemenné, napríklad názov knihy alebo meno autora sa nemenia. 
 
 Faktová tabuľka `fact_ratings` obsahuje záznamy o hodnoteniach a prepojenia na všetky dimenzie. Obsahuje kľúčové metriky, ako je hodnota hodnotenia a časový údaj.
+
+#### Príklad kódu:
 ```sql
 CREATE TABLE fact_ratings AS
 SELECT 
@@ -136,27 +152,25 @@ JOIN dim_time t ON r.timestamp = t.timestamp
 JOIN dim_books b ON r.ISBN = b.dim_bookId
 JOIN dim_users u ON r.userId = u.dim_userId;
 ```
-
----
-### **3.3 Load (Načítanie dát)**
+ELT proces v Snowflake umožnil spracovanie pôvodných dát z `.csv` formátu do viacdimenzionálneho modelu typu hviezda. Tento proces zahŕňal čistenie, obohacovanie a reorganizáciu údajov. Výsledný model umožňuje analýzu čitateľských preferencií a správania používateľov, pričom poskytuje základ pre vizualizácie a reporty.
 
 Po úspešnom vytvorení dimenzií a faktovej tabuľky boli dáta nahraté do finálnej štruktúry. Na záver boli staging tabuľky odstránené, aby sa optimalizovalo využitie úložiska:
+
+#### Príklad kódu:
 ```sql
 DROP TABLE IF EXISTS books_staging;
-DROP TABLE IF EXISTS education_levels_staging;
-DROP TABLE IF EXISTS occupations_staging;
 DROP TABLE IF EXISTS ratings_staging;
 DROP TABLE IF EXISTS users_staging;
+DROP TABLE IF EXISTS occupations_staging;
+DROP TABLE IF EXISTS education_levels_staging;
 ```
-ETL proces v Snowflake umožnil spracovanie pôvodných dát z `.csv` formátu do viacdimenzionálneho modelu typu hviezda. Tento proces zahŕňal čistenie, obohacovanie a reorganizáciu údajov. Výsledný model umožňuje analýzu čitateľských preferencií a správania používateľov, pričom poskytuje základ pre vizualizácie a reporty.
-
 ---
 ## **4 Vizualizácia dát**
 
 Dashboard obsahuje `6 vizualizácií`, ktoré poskytujú základný prehľad o kľúčových metrikách a trendoch týkajúcich sa kníh, používateľov a hodnotení. Tieto vizualizácie odpovedajú na dôležité otázky a umožňujú lepšie pochopiť správanie používateľov a ich preferencie.
 
 <p align="center">
-  <img src="https://github.com/JKabathova/AmazonBooks-ETL/blob/master/amazonbooks_dashboard.png" alt="ERD Schema">
+  <img src="https://github.com/J-Pecuchova/AmazonBooks-ETL/blob/master/img/amazonbooks_dashboard.png" alt="ERD Schema">
   <br>
   <em>Obrázok 3 Dashboard AmazonBooks datasetu</em>
 </p>
@@ -249,3 +263,13 @@ Dashboard poskytuje komplexný pohľad na dáta, pričom zodpovedá dôležité 
 ---
 
 **Autor:** Janka Pecuchová
+
+---
+
+> #### ⚠️ Upozornenie
+>
+> Tento projekt slúži **`len ako vzorový príklad`** s minimálnymi požiadavkami. Je potrebné vytvoriť **`vlastné, originálne riešenie`**. 
+> 
+>
+> - Identické alebo zjavne veľmi podobné projekty budú hodnotené známkou **`Fx`**.  
+> - **Termín odovzdania projektu: `7. 1. 2026`** (termín je záväzný).
